@@ -23,11 +23,36 @@ artifacts/                 raw inference outputs, pre affine realism frames
 |---|---|
 | Detector weights | provided, no retraining needed |
 | Inference from the checkpoint | reproducible, needs a GPU |
-| Detection post processing | reproducible from the inference output |
+| Detection post processing | stages documented and unmodified; **not** reproduced end to end, see below |
 | Realism frame generation | reproduces to 4 decimal places on every moment |
 | Realism affine alignment | **reproduces the submitted frames byte for byte** |
 
 The realism pipeline on this track was verified end to end. See Section 6.
+
+**Status of detection reproduction, stated honestly.** Unlike the realism pipeline, we did
+not achieve an end to end reproduction of the submitted `predictions.json` on this track, and
+we do not ship a driver that claims to. The submitted file was assembled during development
+through per class selection across leaderboard submissions, and that assembly was never
+scripted.
+
+What we did verify against the submitted file, using the inference outputs included in
+`artifacts/inference_outputs/`:
+
+| class | finding |
+|---|---|
+| vehicle | source identified as the run9 output. All **2408 of 2408** submitted vehicle box centres are present in it, a 100 percent match |
+| pedestrian | source identified as four view TTA consensus fusion of the run9 views. Fusing them yields **exactly 11,522** boxes, matching the submitted count precisely |
+| truck | 1237 native detections plus the 2408 disclosed vehicle copies described in Section 5, totalling the submitted 3645 |
+
+What we could not recover is the exact ordering and parameters of the geometric stages applied
+to pedestrian after fusion. Applying re centring, the +0.093 m z offset and the size
+calibration in the documented order does not reproduce the submitted pedestrian boxes, so one
+or more constants differ from what we have recorded. Rather than ship a driver tuned until it
+matched, we state the gap.
+
+Every stage listed in Section 5 is present as original, unmodified code, the inference outputs
+that feed them are included, and the submitted `predictions.json` inside
+`tracks/v2x_real/submissions/FINAL_v2x.zip` is the authoritative file.
 
 ---
 
